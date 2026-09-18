@@ -28,11 +28,13 @@ import androidx.compose.foundation.clickable
 
 @Composable
 fun CityListScreen(
-    cities: List<City>, onAddCity: (City) -> Unit, modifier: Modifier = Modifier
+    cities: List<City>, onAddCity: (City) -> Unit, onUpdateCity: (City, City) -> Unit, modifier: Modifier = Modifier
 ) {
     var newCityName by remember { mutableStateOf("") }
     var newProvinceName by remember { mutableStateOf("") }
     var showAddCityFields by remember { mutableStateOf(false) }
+    var selectedCity by remember { mutableStateOf<City?>(null) }
+
     Column(modifier = modifier.fillMaxSize()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -78,17 +80,35 @@ fun CityListScreen(
                                         province = newProvinceName
                                     )
                                 )
+                                if (selectedCity != null) {
+                                    onUpdateCity(
+                                        selectedCity!!,
+                                        City(
+                                            name = newCityName,
+                                            province = newProvinceName
+                                        )
+                                    )
+                                    selectedCity = null
+                                }
+
                                 newCityName = ""
                                 newProvinceName = ""
                                 showAddCityFields = false
                             }
                         }) {
-                        Text("Add City")
+                        Text(if (selectedCity != null) "Update City" else "Add the City")
 
                     }
-                    LazyColumn {
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
                         itemsIndexed(cities) { index, city ->
-                            CityRow(city = city)
+                            CityRow(city = city,
+                            modifier = Modifier.clickable {
+                                selectedCity = city
+                                newCityName = city.name
+                                newProvinceName = city.province
+                                showAddCityFields = true
+                            }
+                            )
                             if (index < cities.lastIndex) {
                                 HorizontalDivider()
                             }
@@ -112,9 +132,9 @@ fun CityListScreen(
 
 
 @Composable
-fun CityRow(city: City) {
+fun CityRow(city: City, modifier: Modifier = Modifier) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
@@ -141,7 +161,8 @@ fun CityListScreenPreview() {
                 City("Edmonton", "AB"),
                 City("Vancouver", "BC"),
                 City("Calgary", "AB")
-            ), onAddCity = {}
+            ), onAddCity = {},
+            onUpdateCity = { _, _ -> }
         )
     }
 }
