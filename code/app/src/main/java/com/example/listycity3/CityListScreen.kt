@@ -7,6 +7,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -48,12 +50,16 @@ fun CityListScreen(
             ) {
                 Text("+")
             }
-            if (showAddCityFields) {
+        }
+        if (showAddCityFields) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     OutlinedTextField(
                         value = newCityName,
@@ -62,66 +68,56 @@ fun CityListScreen(
                         modifier = Modifier.weight(1f)
                     )
 
-                    Spacer(modifier = Modifier.width(8.dp))
                     OutlinedTextField(
                         value = newProvinceName,
                         onValueChange = { newProvinceName = it },
                         label = { Text("Province") },
                         modifier = Modifier.weight(1f)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        onClick = {
-                            if (newCityName.isNotBlank() && newProvinceName.isNotBlank()) {
-                                onAddCity(
-                                    City(
-                                        name = newCityName,
-                                        province = newProvinceName
-                                    )
-                                )
-                                if (selectedCity != null) {
-                                    onUpdateCity(
-                                        selectedCity!!,
-                                        City(
-                                            name = newCityName,
-                                            province = newProvinceName
-                                        )
-                                    )
-                                    selectedCity = null
-                                }
-
-                                newCityName = ""
-                                newProvinceName = ""
-                                showAddCityFields = false
-                            }
-                        }) {
-                        Text(if (selectedCity != null) "Update City" else "Add the City")
-
-                    }
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        itemsIndexed(cities) { index, city ->
-                            CityRow(city = city,
-                            modifier = Modifier.clickable {
-                                selectedCity = city
-                                newCityName = city.name
-                                newProvinceName = city.province
-                                showAddCityFields = true
-                            }
-                            )
-                            if (index < cities.lastIndex) {
-                                HorizontalDivider()
-                            }
-                        }
-                    }
                 }
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    itemsIndexed(cities) { index, city ->
-                        CityRow(city = city)
-                        if (index < cities.lastIndex) {
-                            HorizontalDivider()
+                
+                Button(
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .align(Alignment.End),
+                    onClick = {
+                        if (newCityName.isNotBlank() && newProvinceName.isNotBlank()) {
+                            val newOrUpdatedCity = City(
+                                name = newCityName,
+                                province = newProvinceName
+                            )
+
+                            if (selectedCity != null) {
+                                onUpdateCity(selectedCity!!, newOrUpdatedCity)
+                            } else {
+                                onAddCity(newOrUpdatedCity)
+                            }
+
+                            newCityName = ""
+                            newProvinceName = ""
+                            selectedCity = null
+                            showAddCityFields = false
                         }
                     }
+                ) {
+                    Text(if (selectedCity != null) "Update City" else "Add the newCity")
+                }
+            }
+        }
+
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            itemsIndexed(cities) { index, city ->
+                CityRow(
+                    city = city,
+                    modifier = Modifier.clickable {
+                        selectedCity = city
+                        newCityName = city.name
+                        newProvinceName = city.province
+                        showAddCityFields = true
+                    }
+                )
+                if (index < cities.lastIndex) {
+                    HorizontalDivider()
                 }
             }
         }
